@@ -26,7 +26,7 @@ def main():
     parser.add_argument('--maxgradnorm', type=float, default=50.0, help='maximum gradient norm')
     parser.add_argument('--final_fc_dim', type=float, default=50, help='hidden state dim for final fc layer')
 
-    dataset = 'assist2009_updated'
+    dataset = 'errex'
 
     if dataset == 'assist2009_updated':
         parser.add_argument('--q_embed_dim', type=int, default=50, help='question embedding dimensions')
@@ -40,7 +40,7 @@ def main():
         parser.add_argument('--load', type=str, default='assist2009_updated', help='model file to load')
         parser.add_argument('--save', type=str, default='assist2009_updated', help='path to save model')
 
-    elif dataset == 'STATICS':
+    if dataset == 'STATICS':
         parser.add_argument('--batch_size', type=int, default=10, help='the batch size')
         parser.add_argument('--q_embed_dim', type=int, default=50, help='question embedding dimensions')
         parser.add_argument('--qa_embed_dim', type=int, default=100, help='answer and question embedding dimensions')
@@ -52,6 +52,17 @@ def main():
         parser.add_argument('--load', type=str, default='STATICS', help='model file to load')
         parser.add_argument('--save', type=str, default='STATICS', help='path to save model')
 
+    if dataset == 'errex':
+        parser.add_argument('--batch_size', type=int, default=10, help='the batch size')
+        parser.add_argument('--q_embed_dim', type=int, default=50, help='question embedding dimensions')
+        parser.add_argument('--qa_embed_dim', type=int, default=100, help='answer and question embedding dimensions')
+        parser.add_argument('--memory_size', type=int, default=50, help='memory size')
+        parser.add_argument('--n_question', type=int, default=180, help='the number of unique questions in the dataset')
+        parser.add_argument('--seqlen', type=int, default=200, help='the allowed maximum length of a sequence')
+        parser.add_argument('--data_dir', type=str, default='./data/errex', help='data directory')
+        parser.add_argument('--data_name', type=str, default='train.csv', help='data set name')
+        parser.add_argument('--load', type=str, default='load.pth', help='model file to load')
+        parser.add_argument('--save', type=str, default='/content/', help='path to save model')
 
 
     params = parser.parse_args()
@@ -59,8 +70,7 @@ def main():
     params.memory_key_state_dim = params.q_embed_dim
     params.memory_value_state_dim = params.qa_embed_dim
 
-    print(params)
-    data_path = './data/assist2009_raw/skill_builder_data_corrected.csv'
+    data_path = params.data_dir + "/" + "train.csv"
 
     dat = DATA_RAW(n_question=params.n_question, seqlen=params.seqlen, separate_char=',')
     # train_data_path = params.data_dir + "/" + "test5.1.txt"
@@ -121,16 +131,16 @@ def main():
         if valid_auc > best_valid_auc:
             print('%3.4f to %3.4f' % (best_valid_auc, valid_auc))
             best_valid_auc = valid_auc
-    #         best_epoch = idx+1
-    #         best_valid_acc = valid_accuracy
-    #         best_valid_loss = valid_loss
-            # test_loss, test_accuracy, test_auc = test(model, params, optimizer, test_q_data, test_qa_data)
-            # print("test_auc: %.4f\ttest_accuracy: %.4f\ttest_loss: %.4f\t" % (test_auc, test_accuracy, test_loss))
+            best_epoch = idx+1
+            best_valid_acc = valid_accuracy
+            best_valid_loss = valid_loss
+            test_loss, test_accuracy, test_auc = test(model, params, optimizer, test_q_data, test_qa_data)
+            print("test_auc: %.4f\ttest_accuracy: %.4f\ttest_loss: %.4f\t" % (test_auc, test_accuracy, test_loss))
 
 
-    # print("best outcome: best epoch: %.4f" % (best_epoch))
-    # print("valid_auc: %.4f\tvalid_accuracy: %.4f\tvalid_loss: %.4f\t" % (best_valid_auc, best_valid_acc, best_valid_loss))
-    # print("test_auc: %.4f\ttest_accuracy: %.4f\ttest_loss: %.4f\t" % (test_auc, test_accuracy, test_loss))
+    print("best outcome: best epoch: %.4f" % (best_epoch))
+    print("valid_auc: %.4f\tvalid_accuracy: %.4f\tvalid_loss: %.4f\t" % (best_valid_auc, best_valid_acc, best_valid_loss))
+    print("test_auc: %.4f\ttest_accuracy: %.4f\ttest_loss: %.4f\t" % (test_auc, test_accuracy, test_loss))
 
 
 

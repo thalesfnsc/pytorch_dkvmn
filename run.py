@@ -60,6 +60,7 @@ def train(epoch_num, model, params, optimizer, q_data, qa_data):
     all_pred[all_pred >= 0.5] = 1.0
     all_pred[all_pred < 0.5] = 0.0
     accuracy = metrics.accuracy_score(all_target, all_pred)
+    
     # f1 = metrics.f1_score(all_target, all_pred)
 
     return epoch_loss/N, accuracy, auc
