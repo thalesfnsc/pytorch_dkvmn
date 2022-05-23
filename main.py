@@ -7,7 +7,7 @@ import numpy as np
 import torch.optim as optim
 
 from data_loader import DATA_RAW
-
+from data_loader import DATA
 
 def main():
     parser = argparse.ArgumentParser()
@@ -59,10 +59,10 @@ def main():
         parser.add_argument('--memory_size', type=int, default=50, help='memory size')
         parser.add_argument('--n_question', type=int, default=180, help='the number of unique questions in the dataset')
         parser.add_argument('--seqlen', type=int, default=200, help='the allowed maximum length of a sequence')
-        parser.add_argument('--data_dir', type=str, default='./data/errex', help='data directory')
+        parser.add_argument('--data_dir', type=str, default='/content/pytorch_dkvmn/data/errex', help='data directory')
         parser.add_argument('--data_name', type=str, default='train.csv', help='data set name')
         parser.add_argument('--load', type=str, default='load.pth', help='model file to load')
-        parser.add_argument('--save', type=str, default='/content/', help='path to save model')
+        parser.add_argument('--save', type=str, default='/content/pytorch_dkvmn/save/save.pt', help='path to save model')
 
 
     params = parser.parse_args()
@@ -75,8 +75,14 @@ def main():
     dat = DATA_RAW(n_question=params.n_question, seqlen=params.seqlen, separate_char=',')
     # train_data_path = params.data_dir + "/" + "test5.1.txt"
 
-    all_data = dat.get_processed_data(data_path)
-    train_q_data, train_qa_data, valid_q_data, valid_qa_data = all_data[0] # first fold
+
+
+    dat =  DATA(n_questions = params.n_question,seqlen=params.seqlen,separe_char=',') 
+    all_data = dat.load_data(data_path)
+    train_q_data, train_qa_data, valid_q_data, valid_qa_data = all_data # first fold
+
+
+    #all_data = dat.get_processed_data(data_path)
 
     params.memory_key_state_dim = params.q_embed_dim
     params.memory_value_state_dim = params.qa_embed_dim
@@ -93,6 +99,7 @@ def main():
 
     model.init_embeddings()
     model.init_params()
+    
     # optimizer = optim.SGD(params=model.parameters(), lr=params.lr, momentum=params.momentum)
     optimizer = optim.Adam(params=model.parameters(), lr=params.lr, betas=(0.9, 0.9))
 
@@ -115,11 +122,12 @@ def main():
 
     for idx in range(params.max_iter):
         train_loss, train_accuracy, train_auc = train(idx, model, params, optimizer, train_q_data, train_qa_data)
-        print('Epoch %d/%d, loss : %3.5f, auc : %3.5f, accuracy : %3.5f' % (idx + 1, params.max_iter, train_loss, train_auc, train_accuracy))
+        print('Epoch %d/%d, loss : %3.5f, auc l: %3.5f, accuracy : %3.5f' % (idx + 1, params.max_iter, train_loss, train_auc, train_accuracy))
         valid_loss, valid_accuracy, valid_auc = test(model, params, optimizer, valid_q_data, valid_qa_data)
         print('Epoch %d/%d, valid auc : %3.5f, valid accuracy : %3.5f' % (idx + 1, params.max_iter, valid_auc, valid_accuracy))
-
-
+        
+        torch.save(model.state_dict(),params.save + '%d' % (idx))
+        
         all_train_auc[idx + 1] = train_auc
         all_train_accuracy[idx + 1] = train_accuracy
         all_train_loss[idx + 1] = train_loss
@@ -134,13 +142,14 @@ def main():
             best_epoch = idx+1
             best_valid_acc = valid_accuracy
             best_valid_loss = valid_loss
-            test_loss, test_accuracy, test_auc = test(model, params, optimizer, test_q_data, test_qa_data)
-            print("test_auc: %.4f\ttest_accuracy: %.4f\ttest_loss: %.4f\t" % (test_auc, test_accuracy, test_loss))
+     #       test_loss, test_accuracy, test_auc = test(model, params, optimizer, test_q_data, test_qa_data)
+     #       print("test_auc: %.4f\ttest_accuracy: %.4f\ttest_loss: %.4f\t" % (test_auc, test_accuracy, test_loss))
 
 
+    
     print("best outcome: best epoch: %.4f" % (best_epoch))
     print("valid_auc: %.4f\tvalid_accuracy: %.4f\tvalid_loss: %.4f\t" % (best_valid_auc, best_valid_acc, best_valid_loss))
-    print("test_auc: %.4f\ttest_accuracy: %.4f\ttest_loss: %.4f\t" % (test_auc, test_accuracy, test_loss))
+    #print("test_auc: %.4f\ttest_accuracy: %.4f\ttest_loss: %.4f\t" % (test_auc, test_accuracy, test_loss))
 
 
 

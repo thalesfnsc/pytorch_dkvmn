@@ -81,7 +81,11 @@ class DATA(object):
             dat = qa_data[j]
             qa_dataArray[j, :len(dat)] = dat
         # dataArray: [ array([[],[],..])] Shape: (3633, 200)
-        return q_dataArray, qa_dataArray
+
+        valid_q_data = q_dataArray
+        valid_qa_data = qa_dataArray
+
+        return q_dataArray, qa_dataArray,valid_q_data,valid_qa_data
 
 
 class DATA_RAW(object):
