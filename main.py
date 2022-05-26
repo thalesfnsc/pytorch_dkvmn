@@ -62,7 +62,7 @@ def main():
         parser.add_argument('--data_dir', type=str, default='/content/pytorch_dkvmn/data/errex', help='data directory')
         parser.add_argument('--data_name', type=str, default='train.csv', help='data set name')
         parser.add_argument('--load', type=str, default='load.pth', help='model file to load')
-        parser.add_argument('--save', type=str, default='/content/pytorch_dkvmn/save/', help='path to save model')
+        parser.add_argument('--save', type=str, default='/content/pytorch_dkvmn/save', help='path to save model')
 
 
     params = parser.parse_args()
@@ -127,7 +127,7 @@ def main():
         valid_loss, valid_accuracy, valid_auc = test(model, params, optimizer, valid_q_data, valid_qa_data)
         print('Epoch %d/%d, valid auc : %3.5f, valid accuracy : %3.5f' % (idx + 1, params.max_iter, valid_auc, valid_accuracy))
         
-        torch.save(model.state_dict(),params.save + 'save'+ '%d' + '.pt' % (idx))
+        torch.save(model.state_dict(),params.save + '/save'+ '%d' % (idx)+'.pt')
         
         all_train_auc[idx + 1] = train_auc
         all_train_accuracy[idx + 1] = train_accuracy
