@@ -57,12 +57,12 @@ def main():
         parser.add_argument('--q_embed_dim', type=int, default=50, help='question embedding dimensions')
         parser.add_argument('--qa_embed_dim', type=int, default=100, help='answer and question embedding dimensions')
         parser.add_argument('--memory_size', type=int, default=50, help='memory size')
-        parser.add_argument('--n_question', type=int, default=180, help='the number of unique questions in the dataset')
-        parser.add_argument('--seqlen', type=int, default=200, help='the allowed maximum length of a sequence')
+        parser.add_argument('--n_question', type=int, default=4, help='the number of unique questions in the dataset')
+        parser.add_argument('--seqlen', type=int, default=300, help='the allowed maximum length of a sequence')
         parser.add_argument('--data_dir', type=str, default='/content/pytorch_dkvmn/data/errex', help='data directory')
         parser.add_argument('--data_name', type=str, default='train.csv', help='data set name')
         parser.add_argument('--load', type=str, default='load.pth', help='model file to load')
-        parser.add_argument('--save', type=str, default='/content/pytorch_dkvmn/save/save.pt', help='path to save model')
+        parser.add_argument('--save', type=str, default='/content/pytorch_dkvmn/save/', help='path to save model')
 
 
     params = parser.parse_args()
@@ -72,12 +72,12 @@ def main():
 
     data_path = params.data_dir + "/" + "train.csv"
 
-    dat = DATA_RAW(n_question=params.n_question, seqlen=params.seqlen, separate_char=',')
+    #dat = DATA_RAW(n_question=params.n_question, seqlen=params.seqlen, separate_char=',')
     # train_data_path = params.data_dir + "/" + "test5.1.txt"
 
 
 
-    dat =  DATA(n_questions = params.n_question,seqlen=params.seqlen,separe_char=',') 
+    dat =  DATA(n_question = params.n_question,seqlen=params.seqlen,separate_char=',') 
     all_data = dat.load_data(data_path)
     train_q_data, train_qa_data, valid_q_data, valid_qa_data = all_data # first fold
 
@@ -86,6 +86,7 @@ def main():
 
     params.memory_key_state_dim = params.q_embed_dim
     params.memory_value_state_dim = params.qa_embed_dim
+
 
     model = MODEL(n_question=params.n_question,
                   batch_size=params.batch_size,
@@ -126,7 +127,7 @@ def main():
         valid_loss, valid_accuracy, valid_auc = test(model, params, optimizer, valid_q_data, valid_qa_data)
         print('Epoch %d/%d, valid auc : %3.5f, valid accuracy : %3.5f' % (idx + 1, params.max_iter, valid_auc, valid_accuracy))
         
-        torch.save(model.state_dict(),params.save + '%d' % (idx))
+        torch.save(model.state_dict(),params.save + 'save'+ '%d' + '.pt' % (idx))
         
         all_train_auc[idx + 1] = train_auc
         all_train_accuracy[idx + 1] = train_accuracy

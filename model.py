@@ -72,7 +72,7 @@ class MODEL(nn.Module):
             q = slice_q_embed_data[i].squeeze(1)
             correlation_weight = self.mem.attention(q)
             if_memory_write = slice_q_data[i].squeeze(1).ge(1)
-            if_memory_write = utils.varible(torch.FloatTensor(if_memory_write.data.tolist()), 1)
+            if_memory_write = utils.varible(torch.FloatTensor(if_memory_write.data.tolist()), -1)
 
 
             ## Read Process

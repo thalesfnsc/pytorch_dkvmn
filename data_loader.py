@@ -35,7 +35,7 @@ class DATA(object):
                 Q = line.split(self.separate_char)
                 if len( Q[len(Q)-1] ) == 0:
                     Q = Q[:-1]
-                #print(len(Q))
+            
             elif lineID % 3 == 2:
                 A = line.split(self.separate_char)
                 if len( A[len(A)-1] ) == 0:
