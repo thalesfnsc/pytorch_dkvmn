@@ -1,6 +1,7 @@
 
 from ast import Break
 from os import sep
+from tracemalloc import start
 from data_loader import DATA
 from data_loader import DATA_RAW
 from model import MODEL
@@ -12,7 +13,7 @@ from sklearn import metrics
 import pandas as pd
 import pickle
 from scipy.stats import pearsonr
-
+import time
 
 def main():
     parser = argparse.ArgumentParser()
@@ -75,12 +76,12 @@ def main():
                   memory_value_state_dim=params.memory_value_state_dim,
                   final_fc_dim=params.final_fc_dim)
 
-    #model.load_state_dict(torch.load('/home/thales/pytorch_dkvmn/DKVMN.pt'))
+    model.load_state_dict(torch.load('/home/thales/pytorch_dkvmn/save300.pt'))
     students = df['student_id'].unique()
 
 
     data_path = '/home/thales/pytorch_dkvmn/data/errex/train.csv'
-    dat =  DATA(n_question = 4,seqlen=params.seqlen,separate_char=',') 
+    dat =  DATA(n_question = params.n_question,seqlen=params.seqlen,separate_char=',') 
     
 
     all_data = dat.load_data(data_path)
@@ -98,10 +99,12 @@ def main():
     all_auc = []
     all_mean_of_correctness = {}
 
-    print(N)
-
+    
     with torch.no_grad():
-        for idx in range(2):
+        start = time.time()
+
+
+        for idx in range(N):
 
             mean_of_correctness = {}
             q_one_seq = train_q_data[idx * batch_size:(idx + 1) * batch_size, :]
@@ -110,8 +113,7 @@ def main():
 
             target = (target-1) /params.n_question
             target = np.floor(target)
-            print(target)
-            
+
             input_q = utils.varible(torch.LongTensor(q_one_seq), params.gpu)
             input_qa = utils.varible(torch.LongTensor(qa_batch_seq), params.gpu)
             target = utils.varible(torch.FloatTensor(target), params.gpu)
@@ -120,30 +122,35 @@ def main():
             target_1d = torch.cat([target_to_1d[i] for i in range(batch_size)], 1)
             target_1d = target_1d.permute(1, 0)
             
-            '''
+            
             _, filtered_pred, filtered_target = model.forward(input_q, input_qa, target_1d)
             right_target = np.asarray(filtered_target.data.tolist())
             right_pred = np.asarray(filtered_pred.data.tolist())
-                        
+            
+            '''               
             index_ordDecimals = np.where(input_q[0].cpu().detach().numpy()==1)[0]
             index_placeNumber = np.where(input_q[0].cpu().detach().numpy()==2)[0]
             index_completeSeque = np.where(input_q[0].cpu().detach().numpy() ==3)[0]
             index_decimaAddition = np.where(input_q[0].cpu().detach().numpy()==4)[0]
+            '''
 
-            #print(input_q[0][index_ordDecimals])
-            #print(right_pred[index_ordDecimals])
-            #print(target[0][index_ordDecimals])
-            #print(target)
+            '''
+            print(input_q[0][index_ordDecimals])
+            print(right_pred[index_ordDecimals])
+            print(target[0][index_ordDecimals])
+            print(target)
             break
-            '''
-
-            '''
+     
             mean_of_correctness['OrderingDecimals'] = np.mean(right_pred[index_ordDecimals])
             mean_of_correctness['PlacementOnNumberLine'] = np.mean(right_pred[index_placeNumber])
             mean_of_correctness['CompleteTheSequence'] = np.mean(right_pred[index_completeSeque])
             mean_of_correctness['DecimalAddition'] = np.mean(right_pred[index_decimaAddition])
             all_mean_of_correctness[students[idx]] = mean_of_correctness
             '''
+        end = time.time()
+    
+    print("time elapsed:",end-start)
+
 
 
     '''
@@ -169,6 +176,7 @@ def main():
 
     pearson_correlations = {}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
 
+  
     pearson_correlations['OrderingDecimals'] = pearsonr(ord_decimals,ordering_decimals_post)[0]
     pearson_correlations['PlacementOnNumberLine'] = pearsonr(place_number,placement_number_post)[0]
     pearson_correlations['CompleteTheSequence'] = pearsonr(complet_sequence,complete_sequence_post)[0]
